@@ -45,7 +45,7 @@ from user.views import (
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 router = DefaultRouter()
-router.register(r'supplier', SupplierViewSet)
+router.register(r'suppliers', SupplierViewSet)
 router.register(r'customers', CustomerViewSet)
 router.register(r'products', ProductViewSet)
 router.register(r'orders', OrderViewSet)

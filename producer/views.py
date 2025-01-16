@@ -234,14 +234,11 @@ class UserInfoView(APIView):
         user = request.user
         try:
             user_profile = UserProfile.objects.get(user=user)
-            has_access_to_marketplace = user_profile.has_access_to_marketplace
         except UserProfile.DoesNotExist:
-            has_access_to_marketplace = False
-
+            pass
         return Response({
             "username": user.username,
             "id": user.id,
-            "has_access_to_marketplace": has_access_to_marketplace,
         })
 
 

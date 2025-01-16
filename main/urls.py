@@ -55,12 +55,12 @@ router.register(r'sales', SaleViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include(router.urls)),
-    path("login/", LoginAPIView.as_view()),
+    path("api/login/", LoginAPIView.as_view()),
     path('api/v1/dashboard/', DashboardAPIView.as_view(), name='dashboard'),
     path('api/v1/user-info/', UserInfoView.as_view()),
     path('api/v1/customer/top-sales/', TopSalesCustomersView.as_view(), name='top-sales-customers'),
     path('api/v1/customer/top-orders/', TopOrdersCustomersView.as_view(), name='top-orders-customers'),
-    path('register/', RegisterView.as_view(), name='register'),
+    path('api/register/', RegisterView.as_view(), name='register'),
     path('api/v1/stats/', StatsAPIView.as_view(), name='stats-api'),
 
     path('api/v1/cities/', CityListView.as_view(), name='city-list'),

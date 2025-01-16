@@ -103,6 +103,7 @@ class ProductSerializer(serializers.ModelSerializer):
     uploaded_images = serializers.ListField(child=serializers.ImageField(), write_only=True, required=False)
     category_details = serializers.CharField(source="get_category_display", read_only=True)
     deleted_images = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    supplier_details = SupplierSerializer(read_only=True, source='supplier')
 
     class Meta:
         model = Product

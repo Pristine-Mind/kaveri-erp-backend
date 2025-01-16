@@ -107,24 +107,24 @@ class Product(models.Model):
     - rate: Unit price of each product
     """
     class ProductCategory(models.TextChoices):
-        FRUITS = 'FR', 'Fruits'
-        VEGETABLES = 'VG', 'Vegetables'
-        GRAINS_AND_CEREALS = 'GR', 'Grains & Cereals'
-        PULSES_AND_LEGUMES = 'PL', 'Pulses & Legumes'
-        SPICES_AND_HERBS = 'SP', 'Spices & Herbs'
-        NUTS_AND_SEEDS = 'NT', 'Nuts & Seeds'
-        DAIRY_AND_ANIMAL_PRODUCTS = 'DF', 'Dairy & Animal Products'
-        FODDER_AND_FORAGE = 'FM', 'Fodder & Forage'
-        FLOWERS_AND_ORNAMENTAL_PLANTS = 'FL', 'Flowers & Ornamental Plants'
-        HERBS_AND_MEDICINAL_PLANTS = 'HR', 'Herbs & Medicinal Plants'
-        OTHER = 'OT', 'Other'
+        BEVERAGE = 'BV', 'Beverage'
+
+    class SubProductCategory(models.TextChoices):
+        STRONG_BEER = 'SB', 'Strong Beer'
+        PREMIUM_BEER = 'PB', 'Premium Beer'
+        SPECIAL_EDITION = 'SE', 'Special Edition'
 
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, verbose_name=_("Producer"), null=True, blank=True)
     name = models.CharField(max_length=100, verbose_name=_("Product Name"))
     category = models.CharField(
         max_length=2,
         choices=ProductCategory.choices,
-        default=ProductCategory.FRUITS,
+        default=ProductCategory.BEVERAGE,
+    )
+    sub_category = models.CharField(
+        max_length=2,
+        choices=SubProductCategory.choices,
+        null=True, blank=True
     )
     description = models.TextField(verbose_name=_("Product Description"))
     sku = models.CharField(max_length=100, unique=True, verbose_name=_("Stock Keeping Unit (SKU)"), null=True, blank=True)

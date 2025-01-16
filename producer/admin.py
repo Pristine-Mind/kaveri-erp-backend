@@ -1,8 +1,8 @@
 from django.contrib import admin
-from .models import Producer, Customer, Product, Order, Sale, StockList, MarketplaceProduct, ProductImage
+from .models import Supplier, Customer, Product, Order, Sale, StockList, MarketplaceProduct, ProductImage
 
 
-@admin.register(Producer)
+@admin.register(Supplier)
 class ProducerAdmin(admin.ModelAdmin):
     list_display = ('name', 'contact', 'email', 'registration_number', 'created_at', 'updated_at')
     search_fields = ('name', 'email', 'registration_number')
@@ -20,11 +20,11 @@ class CustomerAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'producer', 'sku', 'price', 'cost_price', 'stock', 'reorder_level', 'is_active', 'created_at', 'updated_at')
+    list_display = ('name', 'supplier', 'sku', 'price', 'cost_price', 'stock', 'reorder_level', 'is_active', 'created_at', 'updated_at')
     search_fields = ('name', 'sku')
     list_filter = ('is_active', 'created_at', 'updated_at')
     readonly_fields = ('created_at', 'updated_at')
-    autocomplete_fields = ['producer']
+    autocomplete_fields = ['supplier']
 
 
 @admin.register(Order)

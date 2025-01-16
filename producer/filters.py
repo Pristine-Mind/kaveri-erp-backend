@@ -1,12 +1,12 @@
 import django_filters
-from .models import Sale, Producer, Customer, Product, MarketplaceProduct, Order
+from .models import Sale, Supplier, Customer, Product, MarketplaceProduct, Order
 
 
-class ProducerFilter(django_filters.FilterSet):
+class SupplierFilter(django_filters.FilterSet):
     search = django_filters.CharFilter(method='filter_search', label="Search")
 
     class Meta:
-        model = Producer
+        model = Supplier
         fields = ['search']
 
     def filter_search(self, queryset, name, value):

@@ -9,7 +9,7 @@ from main.manager import ShopSpecificQuerySet
 from typing import Optional
 
 
-class Producer(models.Model):
+class Supplier(models.Model):
     """
     Represents a producer or manufacturer of products in the system.
 
@@ -119,7 +119,7 @@ class Product(models.Model):
         HERBS_AND_MEDICINAL_PLANTS = 'HR', 'Herbs & Medicinal Plants'
         OTHER = 'OT', 'Other'
 
-    producer = models.ForeignKey(Producer, on_delete=models.CASCADE, verbose_name=_("Producer"), null=True, blank=True)
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, verbose_name=_("Producer"), null=True, blank=True)
     name = models.CharField(max_length=100, verbose_name=_("Product Name"))
     category = models.CharField(
         max_length=2,

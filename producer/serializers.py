@@ -5,7 +5,7 @@ from django.contrib.gis.geos import Point
 from rest_framework import serializers
 
 from .models import (
-    Producer,
+    Supplier,
     Customer,
     Product,
     Order,
@@ -17,11 +17,11 @@ from .models import (
 )
 
 
-class ProducerSerializer(serializers.ModelSerializer):
+class SupplierSerializer(serializers.ModelSerializer):
     location_details = serializers.SerializerMethodField()
 
     class Meta:
-        model = Producer
+        model = Supplier
         fields = "__all__"
         extra_kwargs = {"user": {"read_only": True}}
 

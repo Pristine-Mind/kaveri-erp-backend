@@ -1,8 +1,6 @@
 from datetime import timedelta
 
-from django.db.models.query import QuerySet
 from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required
 
 from rest_framework import viewsets
 from rest_framework.views import APIView
@@ -18,33 +16,28 @@ from django.db.models.functions import TruncMonth
 import logging
 
 from .models import (
-    Producer,
+    Supplier,
     Customer,
     Product,
     Order,
     Sale,
-    StockList,
-    MarketplaceProduct,
     City,
 )
 from .serializers import (
-    ProducerSerializer,
+    SupplierSerializer,
     CustomerSerializer,
     ProductSerializer,
     OrderSerializer,
     SaleSerializer,
     CustomerSalesSerializer,
     CustomerOrdersSerializer,
-    StockListSerializer,
-    MarketplaceProductSerializer,
     CitySerializer,
 )
 from .filters import (
     SaleFilter,
-    ProducerFilter,
+    SupplierFilter,
     CustomerFilter,
     ProductFilter,
-    MarketplaceProductFilter,
 )
 from .utils import export_queryset_to_excel
 from user.models import UserProfile
@@ -52,26 +45,26 @@ from user.models import UserProfile
 logger = logging.getLogger(__name__)
 
 
-class ProducerViewSet(viewsets.ModelViewSet):
+class SupplierViewSet(viewsets.ModelViewSet):
     """
     A viewset for viewing and editing producer instances.
     """
 
-    queryset = Producer.objects.all().order_by("-created_at")
-    serializer_class = ProducerSerializer
-    filterset_class = ProducerFilter
+    queryset = Supplier.objects.all().order_by("-created_at")
+    serializer_class = SupplierSerializer
+    filterset_class = SupplierFilter
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
         if not user.is_authenticated:
-            return Producer.objects.none()
+            return Supplier.objects.none()
 
         user_profile = getattr(user, "userprofile", None)
         if user_profile:
-            return Producer.objects.filter(user__userprofile__shop_id=user_profile.shop_id)
+            return Supplier.objects.filter(user__userprofile__shop_id=user_profile.shop_id)
         else:
-            return Producer.objects.none()
+            return Supplier.objects.none()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -305,86 +298,6 @@ class TopOrdersCustomersView(APIView):
         return Response(orders_serializer.data, status=status.HTTP_200_OK)
 
 
-class StockListView(viewsets.ModelViewSet):
-    queryset = StockList.objects.filter(is_pushed_to_marketplace=False).distinct()
-    serializer_class = StockListSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        if not user.is_authenticated:
-            return StockList.objects.none()
-
-        user_profile = getattr(user, "userprofile", None)
-        if user_profile:
-            return StockList.objects.filter(user__userprofile__shop_id=user_profile.shop_id)
-        else:
-            return StockList.objects.none()
-
-    @action(detail=True, methods=["post"], url_path="push-to-marketplace")
-    def push_to_marketplace(self, request, pk=None):
-        try:
-            stock_item = self.get_object()
-        except StockList.DoesNotExist:
-            return Response({"error": "StockList item not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        if MarketplaceProduct.objects.filter(product=stock_item.product).exists():
-            return Response(
-                {"error": f"Product '{stock_item.product.name}' is already listed in the marketplace."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        MarketplaceProduct.objects.create(
-            product=stock_item.product,
-            listed_price=stock_item.product.price,
-            is_available=True,
-            bid_end_date=timezone.now() + timedelta(days=7),
-        )
-
-        # Update the product to have moved to marketplace
-        stock_item.is_pushed_to_marketplace = True
-        stock_item.save(update_fields=["is_pushed_to_marketplace"])
-        return Response(
-            {"message": f"Product '{stock_item.product.name}' has been successfully pushed to the marketplace."},
-            status=status.HTTP_200_OK,
-        )
-
-
-class MarketplaceProductViewSet(viewsets.ModelViewSet):
-    serializer_class = MarketplaceProductSerializer
-    filterset_class = MarketplaceProductFilter
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return MarketplaceProduct.objects.filter(
-            is_available=True,
-            bid_end_date__gte=timezone.now()
-        ).exclude(product__user=self.request.user).order_by("-listed_date").distinct()
-
-
-class MarketplaceUserRecommendedProductViewSet(viewsets.ModelViewSet):
-    serializer_class = MarketplaceProductSerializer
-    # filterset_class = MarketplaceProductFilter
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self) -> QuerySet:
-        user = self.request.user
-        try:
-            user_profile = UserProfile.objects.get(user=user)
-            location = user_profile.location
-        except UserProfile.DoesNotExist:
-            return MarketplaceProduct.objects.none()
-
-        if not location:
-            return MarketplaceProduct.objects.none()
-
-        return MarketplaceProduct.objects.filter(
-            is_available=True,
-            bid_end_date__gte=timezone.now(),
-            product__location=location,
-        ).exclude(product__user=user).order_by("-listed_date")
-
-
 class StatsAPIView(APIView):
     """
     API to provide sales statistics with optional filtering.
@@ -478,29 +391,6 @@ class CityListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
-def withdraw_product(request, product_id):
-    try:
-        product = MarketplaceProduct.objects.get(pk=product_id, product__user=request.user)
-
-        # Ensure that the bid end date has not expired
-        if product.bid_end_date and product.bid_end_date < timezone.now():
-            return Response(
-                {'error': 'Cannot withdraw product. The bidding period has ended.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Withdraw the product
-        product.is_available = False
-        product.save()
-
-        return Response({'message': 'Product withdrawn successfully.'}, status=status.HTTP_200_OK)
-
-    except MarketplaceProduct.DoesNotExist:
-        return Response({'error': 'Product not found or you do not have permission to withdraw this product.'}, status=status.HTTP_404_NOT_FOUND)
-
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def export_producers_to_excel(request):
@@ -519,7 +409,7 @@ def export_producers_to_excel(request):
 
     user_profile = getattr(user, "userprofile", None)
     if user_profile:
-        queryset = Producer.objects.filter(
+        queryset = Supplier.objects.filter(
             user__userprofile__shop_id=user_profile.shop_id
         )
     wb = export_queryset_to_excel(queryset, field_names)

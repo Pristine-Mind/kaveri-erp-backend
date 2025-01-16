@@ -2,14 +2,14 @@ import factory
 from factory.django import DjangoModelFactory
 from faker import Faker
 
-from .models import Producer, Customer, Product, Order, Sale
+from .models import Supplier, Customer, Product, Order, Sale
 
 fake = Faker()
 
 
 class ProducerFactory(DjangoModelFactory):
     class Meta:
-        model = Producer
+        model = Supplier
 
     name = factory.Faker("company")
     contact = factory.Faker("phone_number")

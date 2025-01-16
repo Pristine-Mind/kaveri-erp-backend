@@ -21,7 +21,7 @@ from django.conf.urls.static import static
 
 from rest_framework.routers import DefaultRouter
 from producer.views import (
-    ProducerViewSet,
+    SupplierViewSet,
     CustomerViewSet,
     ProductViewSet,
     OrderViewSet,
@@ -30,12 +30,8 @@ from producer.views import (
     UserInfoView,
     TopSalesCustomersView,
     TopOrdersCustomersView,
-    StockListView,
-    MarketplaceProductViewSet,
     StatsAPIView,
     CityListView,
-    withdraw_product,
-    MarketplaceUserRecommendedProductViewSet,
     export_producers_to_excel,
     export_customers_to_excel,
     export_products_to_excel,
@@ -45,18 +41,15 @@ from producer.views import (
 from user.views import (
     RegisterView,
     LoginAPIView,
-    ContactCreateView,
 )
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 router = DefaultRouter()
-router.register(r'producers', ProducerViewSet)
+router.register(r'supplier', SupplierViewSet)
 router.register(r'customers', CustomerViewSet)
 router.register(r'products', ProductViewSet)
 router.register(r'orders', OrderViewSet)
 router.register(r'sales', SaleViewSet)
-router.register(r'stocklist', StockListView)
-router.register(r'marketplace', MarketplaceProductViewSet, basename="marketplace")
 
 
 urlpatterns = [
@@ -71,9 +64,6 @@ urlpatterns = [
     path('api/v1/stats/', StatsAPIView.as_view(), name='stats-api'),
 
     path('api/v1/cities/', CityListView.as_view(), name='city-list'),
-    path('api/v1/seller/<int:product_id>/withdraw/', withdraw_product, name='withdraw_product'),
-    path('api/v1/contact/', ContactCreateView.as_view(), name='contact-create'),
-    # Docs
     path("docs/", SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     path("api-docs/", SpectacularAPIView.as_view(), name='schema'),
     path("api-docs/swagger-ui/", SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
